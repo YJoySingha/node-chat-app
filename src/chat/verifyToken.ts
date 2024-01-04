@@ -1,18 +1,19 @@
 import { Request, Response } from 'express';
 import axios from 'axios';
 
-export const verifyJwtAndGetUserId = async (jwt) => {
+export const verifyToken = async (jwt) => {
 
-  try {
+  try {  
 
-    const apiUrl = `${process.env.API_BASE_URL}/user-info`;
+    const apiUrl = `${process.env.II_API_URL}/user-info`;
 
     const headers = {
       'ii-token': jwt,
     };
 
     const response = await axios.get(apiUrl, { headers });
-    return response.data.data.id
+
+    return response;
 
   } catch (error) {
     console.log(error)

@@ -1,0 +1,143 @@
+{
+	"info": {
+		"_postman_id": "db503fa6-d237-4111-90c3-0cda737ba03e",
+		"name": "Chat Application",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "31052442",
+		"_collection_link": "https://speeding-robot-240849.postman.co/workspace/IndiaIndex~a107d8d3-da90-4d27-b3d8-a4c5f28fcf70/collection/31052442-db503fa6-d237-4111-90c3-0cda737ba03e?action=share&source=collection_link&creator=31052442"
+	},
+	"item": [
+		{
+			"name": "{{url}}/chats",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "ii-token",
+						"value": "{{TOKEN}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/v1/chats?withUser=406",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"v1",
+						"chats"
+					],
+					"query": [
+						{
+							"key": "withUser",
+							"value": "406"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:3000/api/v1/chats/6594f00ab736cd30aaf7fed2",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "ii-token",
+						"value": "{{TOKEN}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": []
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/v1/chats/6594f00ab736cd30aaf7fed2",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"v1",
+						"chats",
+						"6594f00ab736cd30aaf7fed2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "{{url}}/chats/658ea480a172db03158876ba",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "ii-token",
+						"value": "{{TOKEN}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:3000/api/v1/chats/6595269743c5b83af235da98",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"v1",
+						"chats",
+						"6595269743c5b83af235da98"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "{{url}}/user",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "ii-token",
+						"value": "{{TOKEN}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:3000/api/v1/user-info",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"v1",
+						"user-info"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

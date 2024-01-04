@@ -9,6 +9,11 @@ export const RouteNames = {
       method: 'DELETE',
       path: '/chats/:messageId'
     },
+    
+    isReadMessage: {
+      method: 'POST',
+      path: '/chats/:messageId'
+    },
   },
   USER: {
     getUser: {

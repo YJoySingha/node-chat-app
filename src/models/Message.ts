@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
-enum MessageType {
+export enum MessageType {
   TEXT =  'text',
   AUDIO = 'audio',
   FILE = 'file',
@@ -23,7 +23,7 @@ const messageSchema = new Schema<MessageDocument>({
   to: { type: String, required: true },
   content: { type: String, required: true },
   isRead: {type: Boolean, default: false},
-  type: {type: String, enum: Object.values(MessageType)},
+  type: {type: String, enum: Object.values(MessageType),default: MessageType.TEXT },
   timestamp: { type: Date, default: Date.now },
 });
 

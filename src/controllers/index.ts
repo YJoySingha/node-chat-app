@@ -4,10 +4,10 @@ import { Request, Response } from 'express';
 import axios from 'axios';
 
 export const getUserInfo = async( req:Request, res:Response) =>{
-  try {
+  try {  
 
     const authToken = req.headers['ii-token'];
-    const apiUrl = `${process.env.API_BASE_URL}/user-info`;
+    const apiUrl = `${process.env.II_API_URL}/user-info`;
 
     const headers = {
       'ii-token': authToken,
@@ -22,9 +22,11 @@ export const getUserInfo = async( req:Request, res:Response) =>{
 } 
 
 export const getChatMessages = async( req:Request, res:Response) =>{
-  const { userId, withUser }  = req.body;
+  const { userId }  = req.body;
+  const withUser = req.query.withUser
+  console.log({userId, withUser})
   try {
-    
+    const skip = req?.query?.skip as string || 0;
     const result = await Message.find({ 
       $or: [
         { from: userId, to: withUser },
@@ -32,8 +34,8 @@ export const getChatMessages = async( req:Request, res:Response) =>{
       ],
      })
      .sort({ timestamp: 1 })
-            .skip(0)
-            .limit(10)
+            .skip(skip as number)
+            // .limit(20)
             .exec();
 
     return res.status(200).json(result);
@@ -61,6 +63,35 @@ export const deleteChatMessage = async (req:Request, res:Response) => {
     }
 
     const  message = 'Successfully deleted';
+    return res.status(200).json(message);
+  } catch (error) {
+    return res.status(500).json(error);
+  }
+}
+
+export const readMessage = async (req:Request, res:Response) => {
+  try {
+
+    const messageId = req.params.messageId
+
+    if (!mongoose.Types.ObjectId.isValid(messageId)) {
+      
+     const  message = 'Invalid message ID format';
+     return res.status(400).json(message);
+    }
+
+    const updatedMessage = await Message.findByIdAndUpdate(
+      messageId,
+      { $set: { isRead: true } },
+      { new: true }
+    );
+
+    if (!updatedMessage) {
+      const message = 'Message not found';
+      return res.status(400).json(message);
+    }
+
+    const  message = 'Successfully marked as read';
     return res.status(200).json(message);
   } catch (error) {
     return res.status(500).json(error);

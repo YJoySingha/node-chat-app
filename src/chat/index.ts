@@ -1,8 +1,9 @@
 import { Server as SocketIOServer, Socket } from 'socket.io';
-import { Message } from '../models/Message';
-import { verifyJwtAndGetUserId } from './verifyJwtAndGetUserId';
+import { Message, MessageType } from '../models/Message';
+import { verifyToken } from './verifyToken';
 import { SocketEvents } from './socketEvents';
 import { Request, Response } from 'express';
+
 
 const onlineUsers: Record<
   string,
@@ -13,9 +14,10 @@ export const initChat = (io: SocketIOServer) => {
   io.on('connection', async (socket: Socket) => {
     console.log('A user connected:', socket.id);
 
-    const jwt = socket.handshake.query.jwt as string;
+    const token = socket.handshake.query.token as string;
     try {
-      const userId = await verifyJwtAndGetUserId(jwt);
+      const result = await verifyToken(token);
+      const userId = result.data.data.id;
 
       if (!userId) {
         console.log('JWT verification failed');
@@ -27,26 +29,26 @@ export const initChat = (io: SocketIOServer) => {
       io.emit(SocketEvents.UpdateUsers, Object.keys(onlineUsers));
 
       socket.on(SocketEvents.Disconnect, () => {
-        const user = onlineUsers[userId];
-        if (user) {
-          user.online = false;
-          io.emit(SocketEvents.UpdateUsers, Object.keys(onlineUsers));
-        }
+        delete onlineUsers[userId]
+        io.emit(SocketEvents.UpdateUsers, Object.keys(onlineUsers));
       });
 
       socket.on(
         SocketEvents.SendMessage,
-        async (data: { to: string; content: string }) => {
+        async (data: { to: string; content: string ,type: MessageType }) => {
           console.log('SendMessage', data);
-          const { to, content } = data;
-          const message = new Message({ from: userId, to, content });
+          const { to, content, type} = data;
+          const message = new Message({ from: userId, to, content,type });
           await message.save();
 
           const recipientSocket = onlineUsers[to]?.socket;
           if (recipientSocket) {
+            console.log('online user-----',onlineUsers)
+            console.log(`Found socket for ${to} -> ${{recipientSocket}}`)
             recipientSocket.emit(SocketEvents.ReceiveMessage, {
               from: userId,
               content,
+              type
             });
           }
         }
