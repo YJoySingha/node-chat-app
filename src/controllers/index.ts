@@ -23,6 +23,7 @@ export const getUserInfo = async( req:Request, res:Response) =>{
 
 export const getChatMessages = async( req:Request, res:Response) =>{
   const { userId }  = req.body;
+  console.log({userId})
   const withUser = req.query.withUser
   console.log({userId, withUser})
   try {
@@ -35,7 +36,6 @@ export const getChatMessages = async( req:Request, res:Response) =>{
      })
      .sort({ timestamp: 1 })
             .skip(skip as number)
-            // .limit(20)
             .exec();
 
     return res.status(200).json(result);
@@ -43,6 +43,22 @@ export const getChatMessages = async( req:Request, res:Response) =>{
     return res.status(500).json(error);
   }
 } 
+
+export const getUsersByFrom = async (req: Request, res: Response) => {
+
+  const { userId }  = req.body;
+
+  try {
+    const userList = await Message.distinct('from', { to: userId });
+    const userListTo = await Message.distinct('to', { from: userId });
+    const combinedUserList = [...userList, ...userListTo];
+    const uniqueUserList = Array.from(new Set(combinedUserList));
+
+    return res.status(200).json({ userList: uniqueUserList });
+  } catch (error) {
+    return res.status(500).json(error);
+  }
+}
 
 export const deleteChatMessage = async (req:Request, res:Response) => {
   try {

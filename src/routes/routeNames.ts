@@ -14,11 +14,16 @@ export const RouteNames = {
       method: 'POST',
       path: '/chats/:messageId'
     },
+
+    getUserListByFrom:{
+      method: 'GET',
+      path: '/users-list'
+    }
   },
   USER: {
     getUser: {
       method: 'GET',
       path: '/user-info'
-    },
+    }
   },
 }

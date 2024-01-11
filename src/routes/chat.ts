@@ -4,6 +4,7 @@ import {
   getChatMessages,
   deleteChatMessage,
   readMessage,
+  getUsersByFrom,
 } from '../controllers'
 import { verifyToken } from '../chat/verifyToken'
 
@@ -27,6 +28,6 @@ export const chatSystemRouter = (router: Router) => {
   router.get(RouteNames.CHAT.getChatMessages.path,auth, getChatMessages)
   router.delete(RouteNames.CHAT.deleteChatMessage.path,auth, deleteChatMessage)
   router.post(RouteNames.CHAT.isReadMessage.path,auth, readMessage)
+  router.get(RouteNames.CHAT.getUserListByFrom.path,auth, getUsersByFrom)
   return router
 }
-  
