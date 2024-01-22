@@ -5,6 +5,7 @@ import { SocketEvents } from './socketEvents';
 import { Request, Response } from 'express';
 import * as redis from 'redis';
 import { promisify } from 'util'; 
+import { notifyUser } from '../controllers';
 
 const onlineUsers: Record<
   string,
@@ -55,8 +56,17 @@ export const initChat = async(io: SocketIOServer) => {
       socket.on(
         SocketEvents.SendMessage,
         async (data: { to: string; content: string ,type: MessageType }) => {
-          console.log('SendMessage event received:', data);
           const { to, content, type} = data;
+
+          notifyUser({
+            by_user_id:userId,
+            for_user_id: to
+
+          }).then(()=>{
+            console.log('message sent')
+          }).catch(err=> {
+            console.log('Error occurred', err.message)
+          })
           const message = new Message({ from: userId, to, content,type });
 
           try {

@@ -3,6 +3,11 @@ import { Message } from "../models/Message";
 import { Request, Response } from 'express';
 import axios from 'axios';
 
+export const notifyUser = async(payload)=> {
+  const apiUrl = `${process.env.II_API_URL}/new_message/notification`;
+
+  return axios.post(apiUrl, payload)
+}
 const getApiInfo = (req: Request): any=> {
   const apiUrl = `${process.env.II_API_URL}/user-info`;
   const authToken = req.headers['ii-token'];
@@ -58,7 +63,6 @@ export const getChatMessages = async( req:Request, res:Response) =>{
             .skip(skip as number)
             .exec();
 
-    
     return res.status(200).json({
       result,
       userData: response.data.data
