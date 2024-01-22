@@ -3,16 +3,26 @@ import { Message } from "../models/Message";
 import { Request, Response } from 'express';
 import axios from 'axios';
 
+const getApiInfo = (req: Request): any=> {
+  const apiUrl = `${process.env.II_API_URL}/user-info`;
+  const authToken = req.headers['ii-token'];
+
+  const headers = {
+    'ii-token': authToken,
+  };
+
+  return {
+    apiUrl,
+    headers
+  }
+}
+
 export const getUserInfo = async( req:Request, res:Response) =>{
   try {  
 
-    const authToken = req.headers['ii-token'];
-    const apiUrl = `${process.env.II_API_URL}/user-info`;
-
-    const headers = {
-      'ii-token': authToken,
-    };
-
+    const {
+      apiUrl, headers
+    } = getApiInfo(req)
     const response = await axios.get(apiUrl, { headers });
 
     return  res.json({ user: response.data });
@@ -24,10 +34,20 @@ export const getUserInfo = async( req:Request, res:Response) =>{
 export const getChatMessages = async( req:Request, res:Response) =>{
   const { userId }  = req.body;
   console.log({userId})
-  const withUser = req.query.withUser
-  console.log({userId, withUser})
+  const withUser = req.query.withUser;
+
+  const authToken = req.headers['ii-token'];
+  const apiUrl = `${process.env.II_API_URL}/user-details-chat`;
+  const headers = {
+    'ii-token': authToken,
+  };
+
   try {
     const skip = req?.query?.skip as string || 0;
+    const params = { user_ids: [withUser, userId].join(',') };
+    const response = await axios.get(apiUrl, { headers, params: { user_ids:`${withUser}, ${userId}` } });
+
+
     const result = await Message.find({ 
       $or: [
         { from: userId, to: withUser },
@@ -38,7 +58,11 @@ export const getChatMessages = async( req:Request, res:Response) =>{
             .skip(skip as number)
             .exec();
 
-    return res.status(200).json(result);
+    
+    return res.status(200).json({
+      result,
+      userData: response.data.data
+    });
   } catch (error) {
     return res.status(500).json(error);
   }
@@ -113,3 +137,26 @@ export const readMessage = async (req:Request, res:Response) => {
     return res.status(500).json(error);
   }
 }
+
+export const getUserDetailsChat = async( req:Request, res:Response) =>{
+  try {  
+
+    const authToken = req.headers['ii-token'];
+    const apiUrl = `${process.env.II_API_URL}/user-details-chat`;
+
+    const headers = {
+      'ii-token': authToken,
+    };
+
+    const user_ids = req.query.user_ids;
+    if (!user_ids) {
+      return res.status(400).json({ error: 'Kindly provide user_ids' });
+    }
+
+    const response = await axios.get(apiUrl, { headers, params: { user_ids } });
+
+    return  res.json({ user: response.data });
+  } catch (error) {
+    return res.status(500).json(error);
+  }
+} 

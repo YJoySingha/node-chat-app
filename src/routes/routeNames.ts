@@ -18,6 +18,11 @@ export const RouteNames = {
     getUserListByFrom:{
       method: 'GET',
       path: '/users-list'
+    },
+
+    getUserDetailsChat:{
+      method: 'GET',
+      path: '/user-details-chat'
     }
   },
   USER: {
