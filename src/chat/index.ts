@@ -25,7 +25,7 @@ redisClient.connect().then(() => {
 
 const setAsync = promisify(redisClient.set).bind(redisClient);
 
-export const initChat = async(io: SocketIOServer) => {
+export const initChat = async (io: SocketIOServer) => {
 
   io.on('connection', async (socket: Socket) => {
     console.log('A user connected:', socket.id);
@@ -45,18 +45,18 @@ export const initChat = async(io: SocketIOServer) => {
       io.emit(SocketEvents.UpdateUsers, Object.keys(onlineUsers));
 
       // Store online users in Redis with proper error handling
-      socket.on(SocketEvents.Disconnect, async() => {
+      socket.on(SocketEvents.Disconnect, async () => {
         delete onlineUsers[userId]
         io.emit(SocketEvents.UpdateUsers, Object.keys(onlineUsers));
 
         // Update online users in Redis after disconnection
-          await setAsync('onlineUsers', JSON.stringify(Object.keys(onlineUsers)));
+        await setAsync('onlineUsers', JSON.stringify(Object.keys(onlineUsers)));
       });
 
       socket.on(
         SocketEvents.SendMessage,
-        async (data: { to: string; content: string ,type: MessageType }) => {
-          const { to, content, type} = data;
+        async (data: { to: string; content: string, file_name: string, file_size: string, type: MessageType }) => {
+          const { to, content, type, file_name, file_size } = data;
 
           notifyUser({
             by_user_id:userId,
@@ -67,64 +67,66 @@ export const initChat = async(io: SocketIOServer) => {
           }).catch(err=> {
             console.log('Error occurred', err.message)
           })
-          const message = new Message({ from: userId, to, content,type });
+          const message = new Message({ from: userId, to, content, type, file_name, file_size });
 
           try {
-          await message.save();
-          // Store message in Redis
-          const messagesss = await redisClient.rPush(`messages:${to}:${userId}`, JSON.stringify(message));
-          const recipientSocket = onlineUsers[to]?.socket;
+            await message.save();
+            // Store message in Redis
+            const messagesss = await redisClient.rPush(`messages:${to}:${userId}`, JSON.stringify(message));
+            const recipientSocket = onlineUsers[to]?.socket;
 
-          if (recipientSocket) {
-            console.log(`Found socket for ${to} -> ${{recipientSocket}}`)
-            recipientSocket.emit(SocketEvents.ReceiveMessage, {
-              from: userId,
-              content,
-              type
-            });
-          }else {
-            console.log('Recipient socket not found');
+            if (recipientSocket) {
+              console.log(`Found socket for ${to} -> ${{ recipientSocket }}`)
+              recipientSocket.emit(SocketEvents.ReceiveMessage, {
+                from: userId,
+                content,
+                file_name,
+                file_size,
+                type
+              });
+            } else {
+              console.log('Recipient socket not found');
+            }
           }
-        }  
-        catch (messageError) {
-          console.error('Error saving message to MongoDB:', messageError);
-        }
-     
-    });
+          catch (messageError) {
+            console.error('Error saving message to MongoDB:', messageError);
+          }
 
-    socket.on(SocketEvents.GetMessages, async (data: { withUser: string }) => {
-      // console.log('getMessage', data);
-      const { withUser } = data;
-    
-      try {
-        // Retrieve messages from MongoDB
-        const mongoDBMessages = await Message.find({
-          $or: [
-            { from: userId, to: withUser },
-            { from: withUser, to: userId },
-          ],
-        })
-          .sort({ timestamp: 1 })
-          .skip(0)
-          .limit(10)
-          .exec();
-    
-        // Retrieve messages from Redis List
-        const redisMessages = await redisClient.lRange(`messages:${userId}:${withUser}`, 0, -1);
-    
-        // Parse Redis messages
-        const parsedRedisMessages = redisMessages.map((messageString) => JSON.parse(messageString));
-    
-        // Combine MongoDB and Redis messages
-        const allMessages = [...mongoDBMessages, ...parsedRedisMessages];
-    
-        socket.emit(SocketEvents.MessageHistory, { withUser, messages: allMessages });
-      } catch (error) {
-        console.error('Error fetching messages:', error);
-        socket.emit(SocketEvents.MessageHistory, { withUser, messages: [] });
-      }
-    });
-    
+        });
+
+      socket.on(SocketEvents.GetMessages, async (data: { withUser: string }) => {
+        // console.log('getMessage', data);
+        const { withUser } = data;
+
+        try {
+          // Retrieve messages from MongoDB
+          const mongoDBMessages = await Message.find({
+            $or: [
+              { from: userId, to: withUser },
+              { from: withUser, to: userId },
+            ],
+          })
+            .sort({ timestamp: 1 })
+            .skip(0)
+            .limit(10)
+            .exec();
+
+          // Retrieve messages from Redis List
+          const redisMessages = await redisClient.lRange(`messages:${userId}:${withUser}`, 0, -1);
+
+          // Parse Redis messages
+          const parsedRedisMessages = redisMessages.map((messageString) => JSON.parse(messageString));
+
+          // Combine MongoDB and Redis messages
+          const allMessages = [...mongoDBMessages, ...parsedRedisMessages];
+
+          socket.emit(SocketEvents.MessageHistory, { withUser, messages: allMessages });
+        } catch (error) {
+          console.error('Error fetching messages:', error);
+          socket.emit(SocketEvents.MessageHistory, { withUser, messages: [] });
+        }
+      });
+
     } catch (error) {
       console.error('JWT verification failed:', error);
       socket.disconnect();
