@@ -38,7 +38,6 @@ export const getUserInfo = async( req:Request, res:Response) =>{
 
 export const getChatMessages = async( req:Request, res:Response) =>{
   const { userId }  = req.body;
-  console.log({userId})
   const withUser = req.query.withUser;
 
   const authToken = req.headers['ii-token'];
@@ -51,7 +50,6 @@ export const getChatMessages = async( req:Request, res:Response) =>{
     const skip = req?.query?.skip as string || 0;
     const params = { user_ids: [withUser, userId].join(',') };
     const response = await axios.get(apiUrl, { headers, params: { user_ids:`${withUser}, ${userId}` } });
-
 
     const result = await Message.find({ 
       $or: [

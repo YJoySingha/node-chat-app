@@ -1,10 +1,9 @@
 import mongoose from 'mongoose';
 
 export const initMongo = () => {
+  const mongoUrl = process.env.MONGODB_URL; 
   mongoose
-    .connect(
-      'mongodb+srv://hero:indiaindexdemo@cluster0.daesock.mongodb.net/test',
-      {}
-    )
-    .then(() => console.log('MongoDB connected'));
+    .connect(mongoUrl,{})
+    .then(() => console.log('MongoDB connected'))
+    .catch(err => console.error('MongoDB connection error:', err));
 };
