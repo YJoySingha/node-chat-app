@@ -5,9 +5,9 @@ import { SocketEvents } from './socketEvents';
 import { Request, Response } from 'express';
 import * as redis from 'redis';
 import { promisify } from 'util'; 
-import { notifyUser } from '../controllers';
+import { notifyUser, onlineUserNotification } from '../controllers';
 
-const onlineUsers: Record<
+export const onlineUsers: Record<
   string,
   { socket: Socket; userId: string; online: boolean }
 > = {};

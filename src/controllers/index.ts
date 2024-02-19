@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { Message } from "../models/Message";
 import { Request, Response } from 'express';
+import { onlineUsers } from '../chat';
 import axios from 'axios';
 
 export const notifyUser = async(payload)=> {
@@ -158,6 +159,27 @@ export const getUserDetailsChat = async( req:Request, res:Response) =>{
     const response = await axios.get(apiUrl, { headers, params: { user_ids } });
 
     return  res.json({ user: response.data });
+  } catch (error) {
+    return res.status(500).json(error);
+  }
+} 
+
+export const onlineUserNotification = async( req:Request, res:Response) =>{
+  try {  
+
+    const userId   = req.query.userId as string;
+    const socket = onlineUsers[userId];
+    if (!socket) {
+      return res.json({ user: userId, online: false }); 
+
+    }
+
+    socket.socket.emit('notification', {
+      message: 'You received a notification'
+    });
+
+    return res.json({user: userId, online: true})
+
   } catch (error) {
     return res.status(500).json(error);
   }

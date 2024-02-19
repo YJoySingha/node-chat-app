@@ -31,4 +31,10 @@ export const RouteNames = {
       path: '/user-info'
     }
   },
+  NOTIFICATION:{
+    notifyOnlineUser: {
+      method: 'POST',
+      path: '/notification'
+    }
+  }
 }
